@@ -73,4 +73,24 @@ final class GameFlowUITests: XCTestCase {
         app.buttons["Neuer Durchlauf"].tap()
         XCTAssertTrue(app.staticTexts["Bildschirm 1/16"].waitForExistence(timeout: 2))
     }
+
+    /// Kompletter Durchlauf (16 × 3 s ≈ 50 s). Läuft nur mit `TEST_RUNNER_FULL_RUN=1 xcodebuild test …`.
+    @MainActor
+    func testFullRunEndsInResult() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["FULL_RUN"] == "1", "Nur auf Anforderung")
+        let app = launchApp()
+        app.buttons["Start"].tap()
+
+        XCTAssertTrue(app.staticTexts["Bildschirm 2/16"].waitForExistence(timeout: 5))
+        app.buttons["1"].tap()
+        app.buttons["2"].tap()
+        snapshot("voll-bildschirm-2", of: app)
+
+        XCTAssertTrue(app.staticTexts["Bildschirm 16/16"].waitForExistence(timeout: 60))
+        snapshot("voll-bildschirm-16", of: app)
+
+        XCTAssertTrue(app.staticTexts["Auswertung"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["Neuer Durchlauf"].exists)
+        snapshot("voll-auswertung", of: app)
+    }
 }
