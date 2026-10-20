@@ -15,9 +15,7 @@ struct FieldView: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Image(systemName: combination.symbol.systemName)
-                .font(.system(size: 48, weight: .semibold))
-                .foregroundStyle(Color(combination.color))
+            SymbolView(combination: combination, size: 48)
                 .frame(height: 56)
 
             switch field {
@@ -44,6 +42,7 @@ struct FieldView: View {
         .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(field.isQuery ? .isButton : [])
         .accessibilityAddTraits(isFocused ? .isSelected : [])
+        .accessibilityHint(field.isQuery && !isFocused ? "Doppeltippen, um dieses Feld auszuwählen" : "")
     }
 
     /// Zwei Ziffernplätze; leere Plätze bleiben als Rahmen sichtbar.

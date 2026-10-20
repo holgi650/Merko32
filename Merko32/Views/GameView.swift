@@ -26,6 +26,9 @@ struct GameView: View {
                 )
             }
             .padding()
+            // Haptik: leichter Impuls pro Eingabe, stärkerer beim Bildschirmwechsel.
+            .sensoryFeedback(.impact(weight: .light), trigger: session.answers)
+            .sensoryFeedback(.impact(weight: .medium), trigger: session.screenIndex)
             .alert("Wirklich abbrechen?", isPresented: $isConfirmingAbort) {
                 Button("Ja, abbrechen", role: .destructive) {
                     session.abort()
@@ -64,6 +67,9 @@ struct GameView: View {
                 )
                 .aspectRatio(1.2, contentMode: .fit)
                 .onTapGesture {
+                    session.focus(id: field.item.id)
+                }
+                .accessibilityAction {
                     session.focus(id: field.item.id)
                 }
             }

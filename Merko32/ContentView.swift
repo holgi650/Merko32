@@ -26,6 +26,11 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sensoryFeedback(.success, trigger: isShowingResult) { _, isResult in isResult }
+    }
+
+    private var isShowingResult: Bool {
+        if case .result = session.phase { true } else { false }
     }
 
     /// In DEBUG-Builds lässt sich mit dem Startargument `-debugTimes` die 3-Sekunden-Config wählen.
