@@ -7,15 +7,35 @@
 
 import SwiftUI
 
+/// RootView: schaltet je nach Phase der Session zwischen Start, Spiel und Auswertung um.
 struct ContentView: View {
+    @State private var session = GameSession(config: Self.config)
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack {
+            Color.appBackground
+                .ignoresSafeArea()
+
+            switch session.phase {
+            case .start:
+                StartView(onStart: session.start)
+            case .playing:
+                GameView(session: session)
+            case .result(let result):
+                ResultView(result: result, onRestart: session.start)
+            }
         }
-        .padding()
+        .preferredColorScheme(.dark)
+    }
+
+    /// In DEBUG-Builds lässt sich mit dem Startargument `-debugTimes` die 3-Sekunden-Config wählen.
+    private static var config: GameConfig {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-debugTimes") {
+            return .debug
+        }
+        #endif
+        return .standard
     }
 }
 
