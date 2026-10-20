@@ -1,0 +1,27 @@
+# ==========================================
+# Git Ignore-Liste für Xcode & Swift (macOS/iOS)
+# ==========================================
+
+# --- Xcode Benutzereinstellungen & temporäre Daten ---
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+
+# --- Build-Ergebnisse & Caches (Derived Data) ---
+DerivedData/
+build/
+Products/
+
+# --- Swift Package Manager (SPM) ---
+.build/
+.swiftpm/xcode/package.xcworkspace/
+.swiftpm/xcode/xcuserdata/
+
+# --- Andere Paketmanager (Carthage / CocoaPods) ---
+Carthage/Build/
+Pods/
+
+# --- Betriebssystem-Müll ---
+.DS_Store
