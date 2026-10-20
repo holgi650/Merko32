@@ -28,6 +28,23 @@ final class GameFlowUITests: XCTestCase {
         add(attachment)
     }
 
+    /// Auf Bildschirm 2 (eine Abfrage) zwei Ziffern tippen, eine löschen und neu tippen.
+    @MainActor
+    func testNumberPadFillsFocusedQuery() throws {
+        let app = launchApp()
+        app.buttons["Start"].tap()
+        XCTAssertTrue(app.staticTexts["Bildschirm 2/16"].waitForExistence(timeout: 5))
+
+        app.buttons["4"].tap()
+        app.buttons["0"].tap()
+        app.buttons["Löschen"].tap()
+        app.buttons["2"].tap()
+
+        let field = app.descendants(matching: .any).matching(NSPredicate(format: "label ENDSWITH %@", "Eingabe 42")).firstMatch
+        XCTAssertTrue(field.exists)
+        snapshot("eingabe", of: app)
+    }
+
     @MainActor
     func testStartAbortAndRestart() throws {
         let app = launchApp()

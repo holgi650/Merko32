@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// Spielbildschirm: Kopfzeile mit Countdown und Abbruch, darunter das 2×2-Raster.
+/// Spielbildschirm: Kopfzeile mit Countdown und Abbruch, darunter das 2×2-Raster und der Ziffernblock.
 struct GameView: View {
     let session: GameSession
     @State private var isConfirmingAbort = false
@@ -18,6 +18,12 @@ struct GameView: View {
                 header(for: screen)
                 grid(for: screen)
                 Spacer(minLength: 0)
+                NumberPadView(
+                    isEnabled: session.focusedItemID != nil,
+                    onDigit: session.input(digit:),
+                    onDelete: session.deleteDigit,
+                    onNext: session.focusNext
+                )
             }
             .padding()
             .alert("Wirklich abbrechen?", isPresented: $isConfirmingAbort) {
@@ -56,7 +62,7 @@ struct GameView: View {
                     input: session.answer(for: field.item.id),
                     isFocused: session.focusedItemID == field.item.id
                 )
-                .aspectRatio(1, contentMode: .fit)
+                .aspectRatio(1.2, contentMode: .fit)
                 .onTapGesture {
                     session.focus(id: field.item.id)
                 }

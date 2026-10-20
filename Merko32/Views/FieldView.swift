@@ -14,11 +14,11 @@ struct FieldView: View {
     private var combination: Combination { field.item.combination }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Image(systemName: combination.symbol.systemName)
-                .font(.system(size: 56, weight: .semibold))
+                .font(.system(size: 48, weight: .semibold))
                 .foregroundStyle(Color(combination.color))
-                .frame(height: 64)
+                .frame(height: 56)
 
             switch field {
             case .show(let item):
