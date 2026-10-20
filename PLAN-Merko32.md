@@ -1,14 +1,18 @@
 # Merko32 – Plan für eine MEK-ähnliche Merkfähigkeits-App (SwiftUI, iPhone)
 
 > Diese Datei ist der vollständige Auftrag. Bitte lies sie ganz und arbeite die Schritte unten **einzeln** ab.
-> Nach jedem Schritt: bauen, testen, mir kurz berichten und **warten**, bis ich committet habe. Selbst nichts committen.
+> Nach jedem Schritt: bauen, testen, bei grünem Test **selbst committen** und direkt mit dem nächsten Schritt weitermachen (geändert ab Schritt 3/5; ursprünglich: warten, bis ich committet habe).
+>
+> **Stand 20.10.2026:** Schritte 0–9 sind umgesetzt und committet, die App läuft. Ideen für weitere Anpassungen stehen ganz unten unter „Mögliche Anpassungen nach den ersten Tests“.
 
 ---
 
 ## 0. Vorbereitung (mache ich selbst in Xcode, bevor Claude startet)
+> Punkte 2 und 3 waren nach dem Anlegen noch nicht gesetzt (iOS 27, iPhone+iPad, Swift 5, Querformat). Claude hat sie auf meinen Wunsch direkt in `project.pbxproj` geändert – bei geschlossenem Xcode.
+
 1. Xcode → **File → New → Project → iOS → App**
    - Product Name: `Merko32`, Interface: SwiftUI, Language: Swift
-   - Testing System: **Swift Testing** (damit das Test-Target `Merki32Tests` gleich mit angelegt wird)
+   - Testing System: **Swift Testing** (damit das Test-Target `Merko32Tests` gleich mit angelegt wird)
    - Storage: None
 2. Im Target `Merko32` → General:
    - Minimum Deployments: **iOS 18.0**
@@ -19,10 +23,11 @@
 5. In diesem Ordner Claude starten und auf diese Datei verweisen.
 
 ## Regeln für Claude im Projekt
-- **Vorhandene Dateien niemals verschieben oder umbenennen** (auch nicht `ContentView.swift`/`Merki32App.swift`). Das hat im ersten Versuch Xcode durcheinandergebracht. Muss etwas verschoben werden, sagst du es mir und ich mache es in Xcode.
-- Neue Dateien direkt am Zielort anlegen. Das Projekt nutzt synchronisierte Ordner, Xcode übernimmt neue Dateien und Unterordner unter `Merki32/` bzw. `Merki32Tests/` automatisch. Die Datei `project.pbxproj` nicht von Hand ändern.
+- **Vorhandene Dateien niemals verschieben oder umbenennen** (auch nicht `ContentView.swift`/`Merko32App.swift`). Das hat im ersten Versuch Xcode durcheinandergebracht. Muss etwas verschoben werden, sagst du es mir und ich mache es in Xcode.
+- Neue Dateien direkt am Zielort anlegen. Das Projekt nutzt synchronisierte Ordner, Xcode übernimmt neue Dateien und Unterordner unter `Merko32/` bzw. `Merko32Tests/` automatisch. Die Datei `project.pbxproj` nicht von Hand ändern (Ausnahme nur auf ausdrücklichen Wunsch und bei geschlossenem Xcode).
 - Wenn eine neue Datei in Xcode nicht auftaucht, sag mir Bescheid, statt Workarounds zu bauen.
-- Nach jedem Schritt: `xcodebuild test -scheme Merki32 -destination 'platform=iOS Simulator,name=iPhone 17'` muss grün sein.
+- Nach jedem Schritt: `xcodebuild test -scheme Merko32 -destination 'platform=iOS Simulator,name=iPhone 17' -skip-testing:Merko32UITests/Merko32UITests/testLaunchPerformance` muss grün sein (den Startup-Performance-Test immer überspringen, er dauert ca. 32 s).
+- Bei grünem Test selbst committen (Nachricht „Schritt N: …“), nicht pushen.
 - Oberfläche und Kommentare auf Deutsch, Code-Bezeichner auf Englisch.
 
 ---
@@ -164,7 +169,7 @@ Für schnelle manuelle Tests gibt es mit `#if DEBUG` eine Config mit z. B. 3 s p
 3. **Scoring** mit `ScoringTests`: richtig, falsch, leer, einstellig, nicht erreicht, Prozent.
 4. **GameSession + Ticker** mit `GameSessionTests`:
    - nach 30 Ticks ist Bildschirm 2 aktiv
-   - nach 300 Ticks ist die Phase Auswertung
+   - nach 314 Ticks ist die Phase Auswertung (Summe aller Zeiten; ursprünglich stand hier fälschlich 300)
    - Eingaben bleiben erhalten
    - die Fokuslogik funktioniert
    - `abort()` führt sofort zur Auswertung und stoppt den Ticker
@@ -177,3 +182,49 @@ Für schnelle manuelle Tests gibt es mit `#if DEBUG` eine Config mit z. B. 3 s p
 ## Verifikation
 - Nach jedem Schritt laufen die Unit-Tests grün (siehe Befehl oben).
 - Mit der DEBUG-Config (3 s pro Bildschirm) im Simulator einmal komplett durchspielen, einmal abbrechen und einmal neu starten.
+
+---
+
+## Umgesetzte Abweichungen und Ergänzungen (Stand Schritt 9)
+- `validate()` prüft zusätzlich doppelte Symbole/Farben und Zeiten ≤ 0.
+- VoiceOver-Labels mit deutscher Endung („roter Stern“, „gelbes Herz“, „orangefarbener Mond“).
+- Auswertung: leer **und** einstellig werden als „–“ angezeigt; nicht erreichte Abfragen als „nicht erreicht“.
+- Abbruch mitten in einem Bildschirm: Dieser Bildschirm zählt als erreicht, seine Eingaben werden gewertet.
+- Auto-Fokus: Sind alle Abfragen eines Bildschirms ausgefüllt, bleibt der Fokus auf dem zuletzt ausgefüllten Feld.
+- Symbole haben einen dezenten hellen Rand (`SymbolView`), weil Blau (2,3 : 1) und Violett (2,0 : 1) auf `#2B2B2B` unter 3 : 1 liegen. Die Farbwerte selbst sind unverändert.
+- Countdown wird in den letzten 5 Sekunden rot.
+- Haptik: leicht pro Eingabe, mittel beim Bildschirmwechsel, Erfolg bei der Auswertung.
+- DEBUG-Config wird über das Startargument `-debugTimes` aktiviert (Scheme → Run → Arguments).
+- UI-Tests `GameFlowUITests`: Start/Abbruch/Neustart und Ziffernblock laufen immer mit; der komplette Durchlauf nur mit `TEST_RUNNER_FULL_RUN=1`.
+- App-Icon selbst gezeichnet (4 Kacheln, „32“ und „11“), plus graue Variante für getönte Icons.
+
+## Mögliche Anpassungen nach den ersten Tests
+Alles hier ist **noch nicht** umgesetzt – nur Ideen, die beim Ausprobieren auffallen könnten. Die Stelle im Code steht jeweils dabei.
+
+### Spielregeln und Schwierigkeit (alles in `Model/GameConfig.swift`)
+- **Zeiten** (`secondsPerScreen`): zu knapp oder zu großzügig? Z. B. erste Bildschirme länger, letzte nicht unter 12 s.
+- **Verteilung** (`newPerScreen` / `queryPerScreen`): Mehr Abstand zwischen Zeigen und Abfragen macht es schwerer. `validate()` prüft neue Werte automatisch.
+- **Zahlenbereich** (`numberRange`): z. B. 10–99 (dann muss die Regel „erste Ziffer ≠ 0“ in `GameSession.input(digit:)` bleiben) oder dreistellige Zahlen (Eingabelänge ist derzeit fest 2).
+- **Anzahl Kombinationen** (`combinationsPerRun`) oder weitere Symbole/Farben – Regel Symbole × Farben ≥ Anzahl.
+- Mindestabstand: Ein Item wird derzeit frühestens auf dem nächsten Bildschirm abgefragt. Eine Regel „frühestens nach 2 Bildschirmen“ bräuchte eine Änderung im `RunGenerator` und in der Präfixbedingung.
+
+### Bedienung im Spiel
+- **Timer während „Wirklich abbrechen?“** läuft weiter. Alternative: Timer pausieren, solange der Dialog offen ist (`GameView` + `GameSession`).
+- **App im Hintergrund / App-Umschalter:** Der Timer pausiert nur, wenn iOS die App wirklich anhält. Kurzes Wechseln kann Zeit kosten. Option: bei `scenePhase != .active` explizit pausieren.
+- **Auto-Fokus**, wenn alle Felder voll sind: stehen bleiben (jetzt) oder auf die erste Abfrage springen.
+- **Antippen eines gefüllten Feldes**: Inhalt behalten (jetzt) oder gleich leeren, damit man direkt neu tippen kann.
+- **Rot-Schwelle des Countdowns** (5 s in `CountdownView`): bei 10-s-Bildschirmen ist die Hälfte rot – evtl. prozentual statt fest.
+- **Haptik** zu stark/schwach oder abschaltbar machen (`GameView`, `ContentView`).
+- Optional ein kurzer Hinweis-Ton oder Blinken beim Bildschirmwechsel, weil ohne Übergang gewechselt wird.
+
+### Darstellung
+- **Symbolrand**: Stärke/Deckkraft in `Views/SymbolView.swift` (`outlineWidth`, `opacity(0.55)`) oder nur bei Blau/Violett verwenden.
+- **Kleine iPhones** (z. B. iPhone SE, 4,7"): Raster + Ziffernblock im Simulator prüfen; ggf. `aspectRatio` in `GameView` und Tastenhöhe in `NumberPadView` verringern.
+- **Dynamic Type**: Schriftgrößen sind meist fest; bei sehr großer Systemschrift prüfen.
+- **Auswertung**: Einstellige Eingabe statt „–“ als Ziffer zeigen (`QueryResult.displayInput` in `Logic/Scoring.swift`); zusätzlich anzeigen, auf welchem Bildschirm gezeigt/abgefragt wurde; falsche Zeilen farbig hinterlegen.
+- **App-Icon**: eigene Dark-Variante statt des gleichen Bildes (`Assets.xcassets/AppIcon.appiconset`).
+
+### Erweiterungen (außerhalb des ursprünglichen Auftrags)
+- Bestwert oder Verlauf speichern (derzeit bewusst keine Speicherung).
+- Einstellungen für Schwierigkeitsstufen (der Startbildschirm hat laut Auftrag bewusst keine).
+- Übungsmodus mit längeren Zeiten.
