@@ -40,9 +40,18 @@ final class GameFlowUITests: XCTestCase {
         // Nach Ablauf von 3 s folgt Bildschirm 2.
         XCTAssertTrue(app.staticTexts["Bildschirm 2/16"].waitForExistence(timeout: 5))
 
+        // Abbruch erst nach Bestätigung; „Weiterspielen“ bleibt im Spiel.
         app.buttons["Abbrechen"].tap()
+        XCTAssertTrue(app.alerts["Wirklich abbrechen?"].waitForExistence(timeout: 2))
+        snapshot("3-abbruch-dialog", of: app)
+        app.alerts.buttons["Weiterspielen"].tap()
+        XCTAssertTrue(app.staticTexts["Bildschirm 3/16"].waitForExistence(timeout: 5))
+        snapshot("4-bildschirm-3", of: app)
+
+        app.buttons["Abbrechen"].tap()
+        app.alerts.buttons["Ja, abbrechen"].tap()
         XCTAssertTrue(app.staticTexts["Auswertung"].waitForExistence(timeout: 2))
-        snapshot("3-auswertung", of: app)
+        snapshot("5-auswertung", of: app)
 
         app.buttons["Neuer Durchlauf"].tap()
         XCTAssertTrue(app.staticTexts["Bildschirm 1/16"].waitForExistence(timeout: 2))

@@ -5,21 +5,62 @@
 
 import SwiftUI
 
-/// Spielbildschirm (vorläufiger Platzhalter, wird in Schritt 6 ausgebaut).
+/// Spielbildschirm: Kopfzeile mit Countdown und Abbruch, darunter das 2×2-Raster.
 struct GameView: View {
     let session: GameSession
+    @State private var isConfirmingAbort = false
+
+    private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Bildschirm \(session.screenIndex + 1)/\(session.config.screenCount)")
-                .font(.headline)
-            Text("\(session.remainingSeconds)")
-                .font(.system(size: 64, weight: .bold, design: .rounded))
-                .monospacedDigit()
-            Button("Abbrechen", role: .destructive) {
-                session.abort()
+        if let screen = session.currentScreen {
+            VStack(spacing: 16) {
+                header(for: screen)
+                grid(for: screen)
+                Spacer(minLength: 0)
+            }
+            .padding()
+            .alert("Wirklich abbrechen?", isPresented: $isConfirmingAbort) {
+                Button("Ja, abbrechen", role: .destructive) {
+                    session.abort()
+                }
+                Button("Weiterspielen", role: .cancel) {}
+            } message: {
+                Text("Nicht erreichte Abfragen zählen als falsch.")
             }
         }
-        .foregroundStyle(.white)
+    }
+
+    private func header(for screen: Screen) -> some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Bildschirm \(screen.index + 1)/\(session.config.screenCount)")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Spacer()
+                Button("Abbrechen") {
+                    isConfirmingAbort = true
+                }
+                .foregroundStyle(Color(GameColor.red))
+                .font(.headline)
+            }
+            CountdownView(remainingSeconds: session.remainingSeconds, totalSeconds: screen.seconds)
+        }
+    }
+
+    private func grid(for screen: Screen) -> some View {
+        LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(screen.fields, id: \.item.id) { field in
+                FieldView(
+                    field: field,
+                    input: session.answer(for: field.item.id),
+                    isFocused: session.focusedItemID == field.item.id
+                )
+                .aspectRatio(1, contentMode: .fit)
+                .onTapGesture {
+                    session.focus(id: field.item.id)
+                }
+            }
+        }
     }
 }
